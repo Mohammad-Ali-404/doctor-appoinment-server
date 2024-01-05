@@ -29,6 +29,7 @@ async function run() {
     const teamMemberCollection = client.db('doctorAppoinment').collection('team')
     const appoinmentBookingCollection = client.db('doctorAppoinment').collection('appoinment')
     const serviceCollection = client.db('doctorAppoinment').collection('service')
+    const pricingCollection = client.db('doctorAppoinment').collection('pricing')
     
 
     // get all user data
@@ -85,6 +86,12 @@ async function run() {
     res.send(result)
   })
 
+  // get pricing plan data
+  app.get('/pricing', async(req, res) =>{
+    const result = await pricingCollection.find().toArray();
+    console.log(result);
+    res.send(result)
+  })
 
 
 
