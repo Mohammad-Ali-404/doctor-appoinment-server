@@ -28,6 +28,7 @@ async function run() {
     const userCollection = client.db('doctorAppoinment').collection('users')
     const teamMemberCollection = client.db('doctorAppoinment').collection('team')
     const appoinmentBookingCollection = client.db('doctorAppoinment').collection('appoinment')
+    const serviceCollection = client.db('doctorAppoinment').collection('service')
     
 
     // get all user data
@@ -39,8 +40,10 @@ async function run() {
   })
   // get all appoinment data
     app.get('/users', async(req, res) =>{
-      const user =await userCollection.find().toArray();
-      res.send(user)
+      const user = userCollection.find();
+      console.log(user)
+        const result = await user.toArray()
+        res.send(result)
   })
 
     // get all team member data
@@ -48,6 +51,7 @@ async function run() {
         const team =await teamMemberCollection.find().toArray();
         res.send(team)
     })
+    
     // get all single team details data
     app.get('/team/:id', async(req, res) =>{
       const id = req.params.id;
@@ -68,6 +72,21 @@ async function run() {
       const appoinment =await appoinmentBookingCollection.find().toArray();
       res.send(appoinment)
   })
+  // get all service data
+  app.get('/service', async(req, res) =>{
+    const result = await serviceCollection.find().toArray();
+    res.send(result)
+  })
+  // get all single service details data
+  app.get('/service/:id', async(req, res) =>{
+    const id = req.params.id;
+    const query = {_id : new ObjectId(id)}
+    const result = await serviceCollection.findOne(query)
+    res.send(result)
+  })
+
+
+
 
 
     // Send a ping to confirm a successful connection
