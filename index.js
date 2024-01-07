@@ -31,6 +31,7 @@ async function run() {
     const serviceCollection = client.db('doctorAppoinment').collection('service')
     const pricingCollection = client.db('doctorAppoinment').collection('pricing')
     const testimonialCollection = client.db('doctorAppoinment').collection('testimonial')
+    const blogCollection = client.db('doctorAppoinment').collection('blog')
     
 
     // get all user data
@@ -93,9 +94,16 @@ async function run() {
     console.log(result);
     res.send(result)
   })
+
   // get all testimonial data
   app.get('/testimonial' , async(req, res) =>{
     const result = await testimonialCollection.find().toArray();
+    res.send(result)
+  })
+
+  // get all blog data
+  app.get('/blogs' , async(req, res) =>{
+    const result = await blogCollection.find().toArray();
     res.send(result)
   })
 
