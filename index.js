@@ -31,22 +31,43 @@ async function run() {
     const serviceCollection = client.db('doctorAppoinment').collection('service')
     const pricingCollection = client.db('doctorAppoinment').collection('pricing')
     const testimonialCollection = client.db('doctorAppoinment').collection('testimonial')
-    const blogCollection = client.db('doctorAppoinment').collection('blog')
-    
+    const blogCollection = client.db('doctorAppoinment').collection('blogs')
 
-    // get all user data
+
+    // get all user data by id
     app.post('/users', async(req, res) =>{
       const user = req.body;
       console.log(user)
+      const query = {email: user.email}
+      const exstingUser = await userCollection.findOne(query)
+      if (exstingUser) {
+       return res.send({message: 'User already exists'})
+      }
       const result = await userCollection.insertOne(user)
       res.send(result)
   })
-  // get all appoinment data
+  // make admin on user 
+  app.patch('/users/admin/:id', async(req, res) =>{
+    const id = req.params.id;
+    const filter = {_id: new ObjectId(id)}
+    const updateDoc = {
+      $set: { role: 'admin' },
+    };
+    const result = await userCollection.updateOne(filter, updateDoc)
+    res.send(result)
+  })
+  // delete a user on admin dashboard
+  app.delete("/users/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await userCollection.deleteOne(query);
+    res.send(result);
+  });
+  // get all user data
     app.get('/users', async(req, res) =>{
-      const user = userCollection.find();
-      console.log(user)
-        const result = await user.toArray()
-        res.send(result)
+      const user = userCollection.find();console.log(user)
+      const result = await user.toArray()
+      res.send(result)
   })
 
     // get all team member data
@@ -54,7 +75,6 @@ async function run() {
         const team =await teamMemberCollection.find().toArray();
         res.send(team)
     })
-    
     // get all single team details data
     app.get('/team/:id', async(req, res) =>{
       const id = req.params.id;
@@ -75,6 +95,7 @@ async function run() {
       const appoinment =await appoinmentBookingCollection.find().toArray();
       res.send(appoinment)
   })
+  
   // get all service data
   app.get('/service', async(req, res) =>{
     const result = await serviceCollection.find().toArray();
