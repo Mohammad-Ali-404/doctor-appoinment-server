@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json())
 
-const veifyJWT = (req, res, next) =>{
+const verifyJWT = (req, res, next) =>{
   const authorization = req.headers.authorization;
   if (!authorization) {
     return res.status(401).send({error: true, message:'unauthorizes access'})
@@ -25,9 +25,10 @@ const veifyJWT = (req, res, next) =>{
     if (err) {
       return res.status(401).send({error: true, message:'unauthorizes access'})
     }
+    console.log(decoded) // bar
+
     req.decoded = decoded;
     next()
-    console.log(decoded.foo) // bar
   });
  }
 
@@ -61,6 +62,18 @@ async function run() {
       const token = jwt.sign(user, process.env.ACCESS_TOEKN_SECRET, { expiresIn: '1h' })
       res.send({token})
     })
+
+    // verify admin
+    const verifyAdmin = async(req, res, next) =>{
+      const email = req.decoded.email;
+      const query = {email : email}
+      const user = await userCollection.findOne(query);
+      if (user?.role !== 'admin') {
+        return res.status(403).send({error: true, message:"forbidden message"})
+      }
+      next()
+    }
+    
     // get all user data by id
     app.post('/users', async(req, res) =>{
       const user = req.body;
@@ -71,6 +84,18 @@ async function run() {
       }
       const result = await userCollection.insertOne(user)
       res.send(result)
+  })
+  // get verify admin 
+  app.get('/users/admin/:email', verifyJWT, async(req, res) =>{
+    const email = req.params.email;
+
+    if (req.decoded.email !== email) {
+      res.send({admin: false})
+    }
+    const query = {email: email}
+    const user = await userCollection.findOne(query)
+    const result = {admin: user?.role === 'admin'}
+    res.send(result)
   })
   // make admin on user 
   app.patch('/users/admin/:id', async(req, res) =>{
@@ -90,7 +115,7 @@ async function run() {
     res.send(result);
   });
   // get all user data
-    app.get('/users', async(req, res) =>{
+    app.get('/users', verifyJWT, verifyAdmin, async(req, res) =>{
       const user = userCollection.find();console.log(user)
       const result = await user.toArray()
       res.send(result)
