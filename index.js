@@ -90,13 +90,14 @@ async function run() {
     const email = req.params.email;
 
     if (req.decoded.email !== email) {
-      res.send({admin: false})
+     return res.send({admin: false})
     }
     const query = {email: email}
     const user = await userCollection.findOne(query)
     const result = {admin: user?.role === 'admin'}
     res.send(result)
   })
+
   // make admin on user 
   app.patch('/users/admin/:id', async(req, res) =>{
     const id = req.params.id;
@@ -107,6 +108,7 @@ async function run() {
     const result = await userCollection.updateOne(filter, updateDoc)
     res.send(result)
   })
+
   // delete a user on admin dashboard
   app.delete("/users/:id", async (req, res) => {
     const id = req.params.id;
@@ -114,6 +116,7 @@ async function run() {
     const result = await userCollection.deleteOne(query);
     res.send(result);
   });
+
   // get all user data
     app.get('/users', verifyJWT, verifyAdmin, async(req, res) =>{
       const user = userCollection.find();console.log(user)
@@ -126,6 +129,7 @@ async function run() {
         const team =await teamMemberCollection.find().toArray();
         res.send(team)
     })
+
     // get all single team details data
     app.get('/team/:id', async(req, res) =>{
       const id = req.params.id;
