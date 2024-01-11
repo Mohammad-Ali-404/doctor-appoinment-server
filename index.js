@@ -25,7 +25,6 @@ const verifyJWT = (req, res, next) =>{
     if (err) {
       return res.status(401).send({error: true, message:'unauthorizes access'})
     }
-    console.log(decoded) // bar
 
     req.decoded = decoded;
     next()
@@ -54,6 +53,7 @@ async function run() {
     const pricingCollection = client.db('doctorAppoinment').collection('pricing')
     const testimonialCollection = client.db('doctorAppoinment').collection('testimonial')
     const blogCollection = client.db('doctorAppoinment').collection('blogs')
+    const subscribeCartCollection = client.db('doctorAppoinment').collection('cart')
 
 
     // get a jwt token
@@ -119,7 +119,7 @@ async function run() {
 
   // get all user data
     app.get('/users', verifyJWT, verifyAdmin, async(req, res) =>{
-      const user = userCollection.find();console.log(user)
+      const user = userCollection.find();
       const result = await user.toArray()
       res.send(result)
   })
@@ -129,7 +129,44 @@ async function run() {
         const team =await teamMemberCollection.find().toArray();
         res.send(team)
     })
-
+    // added a new team member
+    app.post('/team', verifyJWT, verifyAdmin, async(req, res)=>{
+      const newTeamMember = req.body;
+      const result = await teamMemberCollection.insertOne(newTeamMember)
+      res.send(result)
+    })
+    //  added a new team member
+    app.delete("/team/:id", verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await teamMemberCollection.deleteOne(query);
+      res.send(result);
+    });
+    // update team data update from client to backend
+    app.put('/team/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const body = req.body;
+      const updateTeamMember = {
+        $set: {
+          image: body.image,
+          name: body.name,
+          phone: body.phone,
+          specialist : body.specialist,
+          degree : body.degree, 
+          educationalBackground : body.educationalBackground, 
+          experienceAndSkills : body.experienceAndSkills, 
+          phone : body.phone, 
+          registrationNumber : body.registrationNumber, 
+          email : body.email, 
+          selfDescription :body.selfDescription, 
+          facebook :body.facebook, instagram :body.instagram, 
+          twitter:body.twitter
+        },
+      };
+      const result = await teamMemberCollection.updateOne(query, updateTeamMember);
+      res.send(result);
+    });
     // get all single team details data
     app.get('/team/:id', async(req, res) =>{
       const id = req.params.id;
@@ -141,7 +178,6 @@ async function run() {
     // get all appoinment data
     app.post('/appoinment', async(req, res) =>{
       const appoinment = req.body;
-      console.log(appoinment)
       const result = await appoinmentBookingCollection.insertOne(appoinment)
       res.send(result)
   })
@@ -167,7 +203,6 @@ async function run() {
   // get pricing plan data
   app.get('/pricing', async(req, res) =>{
     const result = await pricingCollection.find().toArray();
-    console.log(result);
     res.send(result)
   })
 
@@ -188,6 +223,12 @@ async function run() {
     const query = {_id : new ObjectId(id)}
     const result = await blogCollection.findOne(query)
     res.send(result)
+  })
+  // get subscribe plan data
+  app.post('/subscribecart', async(req, res) =>{
+      const cart = req.body;
+      const result = await subscribeCartCollection.insertOne(cart)
+      res.send(result) 
   })
 
 
