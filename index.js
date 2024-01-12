@@ -55,6 +55,7 @@ async function run() {
     const testimonialCollection = client.db('doctorAppoinment').collection('testimonial')
     const blogCollection = client.db('doctorAppoinment').collection('blogs')
     const subscribeCartCollection = client.db('doctorAppoinment').collection('cart')
+    const paymentCollection = client.db('doctorAppoinment').collection('payment')
 
 
     // get a jwt token
@@ -177,7 +178,7 @@ async function run() {
     })
 
     // get all appoinment data
-    app.post('/appoinment', async(req, res) =>{
+    app.post('/appoinment', verifyJWT, async(req, res) =>{
       const appoinment = req.body;
       const result = await appoinmentBookingCollection.insertOne(appoinment)
       res.send(result)
@@ -232,8 +233,10 @@ async function run() {
       res.send(result) 
   })
   app.get('/subscribecart' , async(req, res) =>{
-    const result = await subscribeCartCollection.find().toArray();
-    res.send(result)
+    const email = req.query.email;
+    const query = { email: email };
+    const result = await subscribeCartCollection.find(query).toArray();
+    res.send(result);
   })
   //  delete cart
   app.delete("/subscribecart/:id", verifyJWT, async (req, res) => {
@@ -256,6 +259,39 @@ async function run() {
       clientSecret: paymentIntent.client_secret
     })
   })
+  app.get('/payments/:email', verifyJWT, async (req, res) => {
+    const query = { email: req.params.email }
+    if (req.params.email !== req.decoded.email) {
+      return res.status(403).send({ message: 'forbidden access' });
+    }
+    const result = await paymentCollection.find(query).toArray();
+    res.send(result);
+  })
+    //   Payment related api 
+    app.post('/payments', async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
+
+      //  carefully delete each item from the cart
+      console.log('payment info', payment);
+      const query = {
+        _id: {
+          $in: payment.cartIds.map(id => new ObjectId(id))
+        }
+      };
+
+      const deleteResult = await subscribeCartCollection.deleteMany(query);
+
+      res.send({ paymentResult, deleteResult });
+    })
+
+    // get all payment history data
+    app.get('/payments' , async(req, res) =>{
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
