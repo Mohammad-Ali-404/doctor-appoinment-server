@@ -184,7 +184,7 @@ async function run() {
       res.send(result)
   })
   // get all appoinment data
-    app.get('/appoinment', async(req, res) =>{
+    app.get('/appoinment', verifyJWT,verifyAdmin, async(req, res) =>{
       const appoinment =await appoinmentBookingCollection.find().toArray();
       res.send(appoinment)
   })
@@ -285,13 +285,23 @@ async function run() {
       res.send({ paymentResult, deleteResult });
     })
 
-    // get all payment history data
+    // get a single payment data by user id
     app.get('/payments' , async(req, res) =>{
+      const allPayment = req.body;
       const email = req.query.email;
       const query = { email: email };
       const result = await paymentCollection.find(query).toArray();
       res.send(result);
     })
+    // get all payment history data
+    app.get('/payment-history', verifyJWT, verifyAdmin, async(req, res) =>{
+      const result = await paymentCollection.find().toArray();
+      res.send(result)
+    })
+
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
