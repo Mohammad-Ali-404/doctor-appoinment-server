@@ -137,7 +137,7 @@ async function run() {
       const result = await teamMemberCollection.insertOne(newTeamMember)
       res.send(result)
     })
-    //  added a new team member
+    //  delete a teammmber by id
     app.delete("/team/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -226,6 +226,32 @@ async function run() {
     const result = await blogCollection.findOne(query)
     res.send(result)
   })
+  //  delete a blog by id
+  app.delete("/blogs/:id", verifyJWT, verifyAdmin, async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await blogCollection.deleteOne(query);
+    res.send(result);
+  });
+  // update blog data update from client to backend
+  app.put('/blogs/:id', async(req, res) =>{
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const body = req.body;
+    const updateBlogs = {
+      $set: {
+        image: body.image,
+        title: body.title,
+        category : body.category,
+        details : body.details, 
+        testimonial : body.testimonial, 
+        additional_description : body.additional_description, 
+        capabilities_details : body.capabilities_details, 
+      },
+    };
+    const result = await blogCollection.updateOne(query, updateBlogs);
+    res.send(result);
+  });
   // get subscribe plan data
   app.post('/subscribecart', async(req, res) =>{
       const cart = req.body;
