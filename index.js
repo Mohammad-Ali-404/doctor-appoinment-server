@@ -252,6 +252,12 @@ async function run() {
     const result = await blogCollection.updateOne(query, updateBlogs);
     res.send(result);
   });
+  // added new blog 
+  app.post('/blogs', verifyJWT, verifyAdmin, async(req, res)=>{
+    const newTeamBlog = req.body;
+    const result = await blogCollection.insertOne(newTeamBlog)
+    res.send(result)
+  })
   // get subscribe plan data
   app.post('/subscribecart', async(req, res) =>{
       const cart = req.body;
