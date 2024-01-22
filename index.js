@@ -305,7 +305,7 @@ async function run() {
       const paymentResult = await paymentCollection.insertOne(payment);
 
       //  carefully delete each item from the cart
-      console.log('payment info', payment);
+      console.log('payment infoo', payment);
       const query = {
         _id: {
           $in: payment.cartIds.map(id => new ObjectId(id))
